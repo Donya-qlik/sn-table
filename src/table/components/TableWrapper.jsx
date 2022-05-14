@@ -42,7 +42,6 @@ export default function TableWrapper(props) {
     rect,
   } = props;
   const { totalColumnCount, totalRowCount, paginationNeeded, rows, columns } = tableData;
-  console.log('🚀 ~ file: TableWrapper.jsx ~ line 45 ~ TableWrapper ~ tableData', tableData);
   const { page, rowsPerPage } = pageInfo;
   const [focusedCellCoord, setFocusedCellCoord] = useState([0, 0]);
   const shouldRefocus = useRef(false);
@@ -130,8 +129,6 @@ export default function TableWrapper(props) {
   };
 
   const tableContainerStyle = {
-    // the footerContainer always wants height: 100%
-    height: footerContainer || constraints.active || !paginationNeeded ? '100%' : 'calc(100% - 49px)',
     overflow: 'hidden',
   };
 
@@ -153,10 +150,10 @@ export default function TableWrapper(props) {
   const outerElement = forwardRef(({ children, ...rest }, ref) => {
     return (
       <Paper
-        {...rest}
         dir={direction}
         sx={paperStyle}
-        ref={useRef({ tableWrapperRef, ref })}
+        {...rest}
+        ref={(tableWrapperRef, ref)}
         onKeyDown={(evt) =>
           handleTableWrapperKeyDown({
             evt,
@@ -184,9 +181,9 @@ export default function TableWrapper(props) {
   const innerElement = forwardRef(({ children, ...rest }, ref) => {
     return (
       <TableContainer
-        {...rest}
-        ref={useRef({ tableContainerRef, ref })}
+        ref={(tableContainerRef, ref)}
         sx={tableContainerStyle}
+        {...rest}
         tabIndex={-1}
         role="application"
         data-testid="table-container"
@@ -200,7 +197,7 @@ export default function TableWrapper(props) {
   });
 
   innerElement.propTypes = {
-    children: PropTypes.object.isRequired,
+    children: PropTypes.array.isRequired,
   };
 
   const getCellWidth = () => {
@@ -301,13 +298,14 @@ export default function TableWrapper(props) {
   };
 
   const MemoizedColumn = memo(Column, areEqual);
+
   return (
-    <>
+    <section>
       <List
         outerElementType={outerElement}
         innerElementType={innerElement}
         className="List"
-        height={rect.height - 49}
+        height={footerContainer || constraints.active || !paginationNeeded ? rect.height : rect.height - 49}
         itemCount={columns.length}
         itemSize={getCellWidth}
         itemKey={columns.id}
@@ -326,7 +324,7 @@ export default function TableWrapper(props) {
           />
         </FooterWrapper>
       )}
-    </>
+    </section>
   );
 }
 
